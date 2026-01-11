@@ -22,28 +22,26 @@ struct ContentView: View {
     
     @State private var showingEnd = false
     @State private var endTitle = ""
+    @State private var alertTxt = ""
     
-    @State private var test = 0
+    //@State private var test = 0
     
     let questionNumberArr = [5,10,20]
+  
+    @State private var answerArr = [0,0,0]
+    
+
     
     var body: some View {
         
         Form {
            
-            Text("What is \(randomInt) * \(userChoiseTable)").font(.headline)
-                TextField(
-                    "Enter the result",
-                    value: $userAnswer,
-                    format: .number
-                ).onSubmit {
-                    showingScore = true
-                }
-            
+            Text("\(randomInt) * \(userChoiseTable)").font(.title).frame(maxWidth: .infinity, alignment: .center)
+
             VStack{
                 Text("Choose multiplication table")
                                             .font(.headline)
-                                        
+              
                                         
         Stepper("\(userChoiseTable) Table", value: $userChoiseTable, in: 2...12, step: 1)
             }
@@ -56,24 +54,51 @@ struct ContentView: View {
                         Text("\($0)")
                     }
                 }.pickerStyle(.segmented)
+                    .onChange(of: numberOfQuestions) {
+                        answerArr = buildButtonArray()
+                    }
+                    .onChange(of: userChoiseTable) {
+                        answerArr = buildButtonArray()
+                    }
+                    
 
             }
             
-            Button("\(randomInt * userChoiseTable)") {
-                // code action to come
+       
+        }
+        
+        Text("Chose the correct answer")
+            .font(.headline)
+      
+        
+        HStack(spacing: 72) {
+            ForEach(0..<3) {number in
+                
+                Button {
+                    
+                    buttonTapped(number)
+                    
+                }
+                label: {
+                    Text("\(answerArr[number])")
+                }
+                .frame(width: 60, height: 30)
+                .foregroundStyle(.orange)
+                .font(.title2)
+                .background(Color.black)
+                .clipShape(.capsule)
+                .shadow(radius: 5)
+                
             }
-            
-            
-            
         }
         
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: newQuestion)
         } message: {
             if userAnswer == randomInt * userChoiseTable {
-                Text("Correct")
+                Text("\(alertTxt)")
             } else {
-                Text("False")
+                Text("\(alertTxt)")
             }
         }
         
@@ -86,13 +111,42 @@ struct ContentView: View {
         
     }
     
+    func buttonTapped(_ number: Int) {
+        
+        let value = answerArr[number]
+        
+        if value == randomInt * userChoiseTable {
+            showingScore = true
+            alertTxt = "Correct"
+            
+        } else {
+            showingScore = true
+            alertTxt = "False"
+        }
+        
+    }
+    
+    
+  
+    
+    func buildButtonArray() -> Array<Int> {
+        
+        var sendArr = [Int]()
+        sendArr.append(randomInt * userChoiseTable)
+        sendArr.append(randomInt + 5 * 2)
+        sendArr.append(userChoiseTable + 12)
+        sendArr.shuffle()
+        return sendArr
+        
+    }
+    
    
     
-
     
     func newQuestion() {
         
         randomInt = Int.random(in: 1...12)
+        answerArr = buildButtonArray()
         answeredQuestions += 1
         
         if numberOfQuestions == answeredQuestions {
